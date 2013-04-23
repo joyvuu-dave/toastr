@@ -18,7 +18,9 @@
                     containerId: 'toast-container',
                     debug: false,
                     fadeIn: 300,
+                    onFadeIn: undefined,
                     fadeOut: 1000,
+                    onFadeOut: undefined,
                     extendedTimeOut: 1000,
                     iconClasses: {
                         error: 'toast-error',
@@ -31,7 +33,8 @@
                     timeOut: 5000, // Set timeOut to 0 to make it sticky
                     titleClass: 'toast-title',
                     messageClass: 'toast-message',
-                    target: 'body'
+                    target: 'body',
+                    newestOnTop: true
                 },
 
                 error = function (message, title, optionsOverride) {
@@ -85,8 +88,12 @@
                     }
 
                     $toastElement.hide();
-                    $container.prepend($toastElement);
-                    $toastElement.fadeIn(options.fadeIn);
+                    if (options.newestOnTop) {
+                        $container.prepend($toastElement);
+                    } else {
+                        $container.append($toastElement);
+                    }
+                    $toastElement.fadeIn(options.fadeIn, options.onFadeIn);
                     if (options.timeOut > 0) {
                         intervalId = setTimeout(fadeAway, options.timeOut);
                     }
@@ -114,6 +121,9 @@
                         }
                         return $toastElement.fadeOut(options.fadeOut, function () {
                             removeToast($toastElement);
+                            if (options.onFadeOut) {
+                                options.onFadeOut();
+                            }
                         });
                     }
 
@@ -212,9 +222,9 @@
         })();
     });
 }(typeof define === 'function' && define.amd ? define : function (deps, factory) {
-    if (typeof module !== 'undefined' && module.exports) { //Node
-        module.exports = factory(require(deps[0]));
-    } else {
-        window['toastr'] = factory(window['jQuery']);
-    }
-}));
+        if (typeof module !== 'undefined' && module.exports) { //Node
+            module.exports = factory(require(deps[0]));
+        } else {
+            window['toastr'] = factory(window['jQuery']);
+        }
+    }));
